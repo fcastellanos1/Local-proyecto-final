@@ -1,10 +1,26 @@
 #include "funciones.h"
 
-Eigen::MatrixXd creacion_particulas(int n)
+Eigen::MatrixXd creacion_particulas(int n, int & seed, double l)
 {
-  Eigen::MatrixXd matriz(n, n);
-  matriz = Eigen::MatrixXd::Constant(n, 4, 17.0);
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matriz;
+  matriz.resize(n, 4);
   
+  for(int ii = 0; ii<n; ii++){
+    matriz(ii, 0) = aleatorio_real(0, l, seed); //x
+    matriz(ii, 1) = aleatorio_real(0, l, seed); //y    
+    matriz(ii, 2) = aleatorio_real(-1, 1, seed); //vx
+    int signo_aleatorio = aleatorio_entero(1,2, seed);
+    if(signo_aleatorio == 2){signo_aleatorio = -1;}    
+    matriz(ii, 3) = signo_aleatorio*std::sqrt(1 - matriz(ii, 2)*matriz(ii, 2)); //vy
+  }
+
+  /* Verificación de orden en memoria de matriz:
+  for (int i = 0; i < matriz.size(); i++){
+    std::cout << *(matriz.data() + i) << "   ";
+    if((i+1)%4 == 0){std::cout<<"\n";}
+  }
+  std::cout<<"\n"<<matriz<<"\n";
+  */
   
   return matriz;
 }

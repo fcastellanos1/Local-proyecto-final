@@ -9,7 +9,7 @@
 #include <random>
 #include <fstream>
 
-Eigen::MatrixXd creacion_particulas(int n);
+Eigen::MatrixXd creacion_particulas(int n, int & seed, double l);
 std::vector<double> creacion_posiciones(int n, int & seed, double l);
 std::vector<double> creacion_velocidades(int n, int & seed);
 void paso(std::vector<double> & pos, std::vector<double> & vel, double & t, double delta_t, double radio, double l);
