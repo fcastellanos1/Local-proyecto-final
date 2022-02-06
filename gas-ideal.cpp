@@ -4,7 +4,7 @@ int main(int argc, char **argv)
 {
   int SEED = 4;
   int N = 50; //# de partículas
-  double R = 0.15; //metros
+  double R = 0.1; //metros
   double L = 10.0; //metros
   int PASOS = 1000;
   double TIEMPO = 0.0; //segundos
@@ -13,7 +13,8 @@ int main(int argc, char **argv)
 
   
   //Eigen::MatrixXd PARTICULAS = creacion_particulas(N, SEED, L);
-  std::vector<double> POSICIONES = creacion_posiciones(N, SEED, L);
+  //std::vector<double> POSICIONES = creacion_posiciones(N, SEED, L);
+  std::vector<double> POSICIONES = creacion_posiciones_2(N, SEED, L, R);
   std::vector<double> VELOCIDADES = creacion_velocidades(N, SEED);
 
   gnuplot_init_trayectorias(L);

@@ -34,6 +34,27 @@ std::vector<double> creacion_posiciones(int n, int & seed, double l)
   return posiciones;
 }
 
+std::vector<double> creacion_posiciones_2(int n, int & seed, double l, double radio)
+{
+  int ver_o_fal = 0;
+  std::vector<double> posiciones(2*n, 0.0);
+  for(int ii = 0; ii<n; ii++){
+    while(ver_o_fal == 0){
+      posiciones[2*ii] = aleatorio_real(0, l, seed);
+      posiciones[2*ii+1] = aleatorio_real(0, l, seed);
+      for(int jj = 0; jj<n; jj++){
+	if(jj==ii && jj!=n-1){jj++;}
+	if(jj==ii && jj==n-1){ver_o_fal=1; break;}
+	double distancia = std::sqrt(std::pow(posiciones[2*ii]-posiciones[2*jj],2) + std::pow(posiciones[2*ii+1]-posiciones[2*jj+1],2));
+	if(distancia<=2*radio){break;}
+	else{if (jj==n-1) ver_o_fal=1;}
+      }
+    }
+    ver_o_fal = 0;
+  }
+  return posiciones;
+}
+
 std::vector<double> creacion_velocidades(int n, int & seed)
 {
   std::vector<double> velocidades(2*n, 0.0);
@@ -69,27 +90,28 @@ void paso(std::vector<double> & posiciones, std::vector<double> & velocidades, d
       double x_2 = posiciones[2*particula_2];
       double y_2 = posiciones[2*particula_2+1];
       double distancia = std::sqrt(std::pow(x-x_2, 2)+std::pow(y-y_2, 2));
-      if(distancia<2*radio){momento_con_particula(posiciones, velocidades, particula, particula_2, delta_tiempo, radio, l);}
+      if(distancia<=2*radio){momento_con_particula(posiciones, velocidades, particula, particula_2, delta_tiempo, radio, l);}
       particula_2++;
-    }
+    }  
     
-    /*if(x<radio || y<radio || std::fabs(x-l)<radio || std::fabs(y-l)<radio){
-      momento_con_pared(posiciones, velocidades, particula, delta_tiempo, radio, l);
-      } */
-    
-    if(x>=0 && x<=l && y>=0 && y<=l){ //Partícula se queda quieta si sale de caja
-      posicion_siguiente(posiciones, velocidades, particula, delta_tiempo);
-    }
+    posicion_siguiente(posiciones, velocidades, particula, delta_tiempo, l);
   }
   
   tiempo += delta_tiempo;
 }
 
-void posicion_siguiente(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, double delta_tiempo)
+void posicion_siguiente(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, double delta_tiempo, double l)
 {
   int index = 2*particula;
   posiciones[index] += velocidades[index]*delta_tiempo;
   posiciones[index+1] += velocidades[index+1]*delta_tiempo;
+  //borrar si algo:
+  
+  if(posiciones[index]<0){posiciones[index]+l/20;}
+  if(posiciones[index]>l){posiciones[index]-l/20;}
+  if(posiciones[index+1]<0){posiciones[index+1]+l/10;}
+  if(posiciones[index+1]>l){posiciones[index+1]-l/10;}
+  
 }
 
 void momento_con_pared(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, double delta_tiempo, double radio, double l)
@@ -128,7 +150,7 @@ void momento_con_particula(std::vector<double> & posiciones, std::vector<double>
   velocidades[2*particula_2] += (prod_punto/modulo_dc)*diferencia_centros[0];
   velocidades[2*particula_2+1] += (prod_punto/modulo_dc)*diferencia_centros[1];
   
-  particula_2++;
+  //particula_2++;
 }
 
 double aleatorio_real(double min, double max, int & seed)
