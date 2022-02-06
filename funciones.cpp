@@ -52,6 +52,8 @@ std::vector<double> creacion_velocidades(int n, int & seed)
 void paso(std::vector<double> & posiciones, std::vector<double> & velocidades, double & tiempo, double delta_tiempo, double radio, double l)
 {
   int n = posiciones.size()/2;
+  //std::vector<double> copia_velocidades(n*2, 0.0);
+  //copia_velocidades = velocidades;
   
   for(int particula = 0; particula<n; particula++){
     double x = posiciones[2*particula];
@@ -67,7 +69,7 @@ void paso(std::vector<double> & posiciones, std::vector<double> & velocidades, d
       double x_2 = posiciones[2*particula_2];
       double y_2 = posiciones[2*particula_2+1];
       double distancia = std::sqrt(std::pow(x-x_2, 2)+std::pow(y-y_2, 2));
-      if(distancia<radio){momento_con_particula(posiciones, velocidades, particula, particula_2, delta_tiempo, radio, l);}
+      if(distancia<2*radio){momento_con_particula(posiciones, velocidades, particula, particula_2, delta_tiempo, radio, l);}
       particula_2++;
     }
     
@@ -106,9 +108,27 @@ void momento_con_pared(std::vector<double> & posiciones, std::vector<double> & v
   
 }
 
-void momento_con_particula(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, int particula_2, double delta_tiempo, double radio, double l)
+void momento_con_particula(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, int & particula_2, double delta_tiempo, double radio, double l)
 {
-  int whatever = 0; //Comando random
+  std::vector<double> diferencia_centros(2, 0.0);
+  std::vector<double> diferencia_velocidades(2, 0.0);
+
+  diferencia_centros[0] = posiciones[2*particula]-posiciones[2*particula_2];
+  diferencia_centros[1] = posiciones[2*particula+1]-posiciones[2*particula_2+1];
+
+  diferencia_velocidades[0] = velocidades[2*particula]-velocidades[2*particula_2];
+  diferencia_velocidades[1] = velocidades[2*particula+1]-velocidades[2*particula_2+1];
+
+  double modulo_dc = std::pow(diferencia_centros[0], 2) + std::pow(diferencia_centros[1], 2);
+  double prod_punto = diferencia_centros[0]*diferencia_velocidades[0] + diferencia_centros[1]*diferencia_velocidades[1];
+  
+  velocidades[2*particula] -= (prod_punto/modulo_dc)*diferencia_centros[0];
+  velocidades[2*particula+1] -= (prod_punto/modulo_dc)*diferencia_centros[1];
+  
+  velocidades[2*particula_2] += (prod_punto/modulo_dc)*diferencia_centros[0];
+  velocidades[2*particula_2+1] += (prod_punto/modulo_dc)*diferencia_centros[1];
+  
+  particula_2++;
 }
 
 double aleatorio_real(double min, double max, int & seed)

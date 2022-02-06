@@ -3,8 +3,8 @@
 int main(int argc, char **argv)
 {
   int SEED = 4;
-  int N = 5; //# de partículas
-  double R = 0.2; //metros
+  int N = 50; //# de partículas
+  double R = 0.15; //metros
   double L = 10.0; //metros
   int PASOS = 1000;
   double TIEMPO = 0.0; //segundos
