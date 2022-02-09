@@ -78,27 +78,19 @@ void paso(std::vector<double> & posiciones, std::vector<double> & velocidades, d
 void paso_paralelo(std::vector<double> & posiciones, std::vector<double> & velocidades, double & tiempo, double delta_tiempo, double radio, double l)
 {
   int n = posiciones.size()/2;
-  /* Vamos a ponerlo abajo como Oscar
-#pragma omp parallel for
-  for(int particula = 0; particula<n; particula++){
-    double x = posiciones[2*particula];
-    double y = posiciones[2*particula+1];
-    
-    if(x<=radio || y<=radio || std::fabs(x-l)<=radio || std::fabs(y-l)<=radio){
-      momento_con_pared(posiciones, velocidades, particula, delta_tiempo, radio, l);
-    }
-  }
-  */
   
   std::vector<double> copia_velocidades(2*n, 0.0);
-  //copia_velocidades = velocidades; //Tener presente
-  for(int ii=0;ii<2*n;ii++){copia_velocidades[ii]=velocidades[ii];}
+#pragma omp parallel for
+  for(int ii=0;ii<2*n;ii++){
+    copia_velocidades[ii]=velocidades[ii];
+  }
   
 #pragma omp parallel for
   for(int particula=0; particula<n; particula++){
     int particula_2 = 0;
     while(particula_2 <n){
       if(particula_2 == particula){particula_2++;}
+      if(particula_2 >=n){break;}
       double x = posiciones[2*particula];
       double y = posiciones[2*particula+1];
       double x_2 = posiciones[2*particula_2];
@@ -108,7 +100,7 @@ void paso_paralelo(std::vector<double> & posiciones, std::vector<double> & veloc
       particula_2++;
     }
   }
-  //velocidades = copia_velocidades; //Tener presente
+  //velocidades = copia modificada
 #pragma omp parallel for
   for(int ii=0; ii<2*n; ii++){
     velocidades[ii] = copia_velocidades[ii];

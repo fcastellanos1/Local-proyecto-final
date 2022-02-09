@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv)
 {
-  int SEED = 4;
+  int SEED = 5; //4
   int N = std::atoi(argv[1]); //# de partículas
   double TEMPERATURA = std::atof(argv[2]); //kelvin
   double R = 0.1; //metros
@@ -20,6 +20,7 @@ int main(int argc, char **argv)
   
   for(int step = 1; step<= PASOS; step++){
     //std::cout<<"t = "<<TIEMPO<<"\n";
+    //paso(POSICIONES, VELOCIDADES, TIEMPO, DELTA_TIEMPO, R, L);
     paso_paralelo(POSICIONES, VELOCIDADES, TIEMPO, DELTA_TIEMPO, R, L);
     //print_vector(POSICIONES);
     gnuplot_trayectorias(POSICIONES, R);
