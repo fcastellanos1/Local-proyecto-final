@@ -1,30 +1,5 @@
 #include "funciones.h"
 
-Eigen::MatrixXd creacion_particulas(int n, int & seed, double l)
-{
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matriz;
-  matriz.resize(n, 4);
-  
-  for(int ii = 0; ii<n; ii++){
-    matriz(ii, 0) = aleatorio_real(0, l, seed); //x
-    matriz(ii, 1) = aleatorio_real(0, l, seed); //y    
-    matriz(ii, 2) = aleatorio_real(-1, 1, seed); //vx
-    int signo_aleatorio = aleatorio_entero(1,2, seed);
-    if(signo_aleatorio == 2){signo_aleatorio = -1;}    
-    matriz(ii, 3) = signo_aleatorio*std::sqrt(1 - matriz(ii, 2)*matriz(ii, 2)); //vy
-  }
-
-  /* Verificación de orden en memoria de matriz:
-  for (int i = 0; i < matriz.size(); i++){
-    std::cout << *(matriz.data() + i) << "   ";
-    if((i+1)%4 == 0){std::cout<<"\n";}
-  }
-  std::cout<<"\n"<<matriz<<"\n";
-  */
-  
-  return matriz;
-}
-
 std::vector<double> creacion_posiciones(int n, int & seed, double l)
 {
   std::vector<double> posiciones(2*n, 0.0);
@@ -40,8 +15,8 @@ std::vector<double> creacion_posiciones_2(int n, int & seed, double l, double ra
   std::vector<double> posiciones(2*n, 0.0);
   for(int ii = 0; ii<n; ii++){
     while(ver_o_fal == 0){
-      posiciones[2*ii] = aleatorio_real(0, l, seed);
-      posiciones[2*ii+1] = aleatorio_real(0, l, seed);
+      posiciones[2*ii] = aleatorio_real(radio, l-radio, seed);
+      posiciones[2*ii+1] = aleatorio_real(radio, l-radio, seed);
       for(int jj = 0; jj<n; jj++){
 	if(jj==ii && jj!=n-1){jj++;}
 	if(jj==ii && jj==n-1){ver_o_fal=1; break;}
@@ -94,7 +69,7 @@ void paso(std::vector<double> & posiciones, std::vector<double> & velocidades, d
       particula_2++;
     }  
     
-    posicion_siguiente(posiciones, velocidades, particula, delta_tiempo, l);
+    posicion_siguiente(posiciones, velocidades, particula, delta_tiempo, l, radio);
   }
   
   tiempo += delta_tiempo;
@@ -103,6 +78,7 @@ void paso(std::vector<double> & posiciones, std::vector<double> & velocidades, d
 void paso_paralelo(std::vector<double> & posiciones, std::vector<double> & velocidades, double & tiempo, double delta_tiempo, double radio, double l)
 {
   int n = posiciones.size()/2;
+  /* Vamos a ponerlo abajo como Oscar
 #pragma omp parallel for
   for(int particula = 0; particula<n; particula++){
     double x = posiciones[2*particula];
@@ -112,6 +88,7 @@ void paso_paralelo(std::vector<double> & posiciones, std::vector<double> & veloc
       momento_con_pared(posiciones, velocidades, particula, delta_tiempo, radio, l);
     }
   }
+  */
   
   std::vector<double> copia_velocidades(2*n, 0.0);
   //copia_velocidades = velocidades; //Tener presente
@@ -139,24 +116,30 @@ void paso_paralelo(std::vector<double> & posiciones, std::vector<double> & veloc
 
 #pragma omp parallel for
   for(int particula=0; particula<n; particula++){
-    posicion_siguiente(posiciones, velocidades, particula, delta_tiempo, l);
+    posicion_siguiente(posiciones, velocidades, particula, delta_tiempo, l, radio);
   }
   
   tiempo += delta_tiempo;
 }
 
-void posicion_siguiente(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, double delta_tiempo, double l)
+void posicion_siguiente(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, double delta_tiempo, double l, double radio)
 {
   int index = 2*particula;
   posiciones[index] += velocidades[index]*delta_tiempo;
   posiciones[index+1] += velocidades[index+1]*delta_tiempo;
-  //borrar si algo:
   
-  if(posiciones[index]<0){posiciones[index]+=l/20;}
-  if(posiciones[index]>l){posiciones[index]-=l/20;}
-  if(posiciones[index+1]<0){posiciones[index+1]+=l/10;}
-  if(posiciones[index+1]>l){posiciones[index+1]-=l/10;}
-  //IMPLEMENTAR LO QUE DIJO OSCAR
+  double x = posiciones[index];
+  double y = posiciones[index+1];
+  if(x<=radio || y<=radio || std::fabs(x-l)<=radio || std::fabs(y-l)<=radio){
+    momento_con_pared(posiciones, velocidades, particula, delta_tiempo, radio, l);
+  }
+  
+  //Si se sale, hay reflexión con la pared:
+  if(x<radio){posiciones[index] = 2*radio-x;}
+  if(x>l-radio){posiciones[index] = 2*(l-radio) - x;}
+  if(y<radio){posiciones[index+1] = 2*radio-y;}
+  if(y>l-radio){posiciones[index+1] = 2*(l-radio) - y;}
+  
 }
 
 void momento_con_pared(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, double delta_tiempo, double radio, double l)
@@ -165,11 +148,11 @@ void momento_con_pared(std::vector<double> & posiciones, std::vector<double> & v
   double x = posiciones[index];
   double y = posiciones[index+1];
   
-  if(x<radio || std::fabs(x-l)<radio || x>l){
+  if(x<=radio || std::fabs(x-l)<=radio){
     velocidades[index] *= -1;
   }
   
-  if(y<radio || std::fabs(y-l)<radio || y>l){
+  if(y<=radio || std::fabs(y-l)<=radio){
     velocidades[index+1] *= -1;
   }
   

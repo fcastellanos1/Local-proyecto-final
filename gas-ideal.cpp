@@ -12,7 +12,6 @@ int main(int argc, char **argv)
   double DELTA_TIEMPO = 0.1; //segundos
   
   
-  //Eigen::MatrixXd PARTICULAS = creacion_particulas(N, SEED, L);
   //std::vector<double> POSICIONES = creacion_posiciones(N, SEED, L);
   std::vector<double> POSICIONES = creacion_posiciones_2(N, SEED, L, R);
   std::vector<double> VELOCIDADES = creacion_velocidades(N, SEED);
