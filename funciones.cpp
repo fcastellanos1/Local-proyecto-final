@@ -10,7 +10,7 @@ std::vector<double> creacion_posiciones(int n, int & seed, double l)
 }
 
 std::vector<double> creacion_posiciones_2(int n, int & seed, double l, double radio)
-{
+{  
   int ver_o_fal = 0;
   std::vector<double> posiciones(2*n, 0.0);
   for(int ii = 0; ii<n; ii++){
@@ -33,6 +33,7 @@ std::vector<double> creacion_posiciones_2(int n, int & seed, double l, double ra
 std::vector<double> creacion_velocidades(int n, int & seed)
 {
   std::vector<double> velocidades(2*n, 0.0);
+#pragma omp parallel for
   for(int ii = 0; ii<2*n-1; ii+=2){
     
     velocidades[ii] = aleatorio_real(-1, 1, seed);
@@ -41,6 +42,28 @@ std::vector<double> creacion_velocidades(int n, int & seed)
     if(signo_aleatorio == 2){signo_aleatorio = -1;}
     
     velocidades[ii+1] = signo_aleatorio*std::sqrt(1 - velocidades[ii]*velocidades[ii]);
+  }
+  return velocidades;
+}
+
+std::vector<double> creacion_velocidades_2(int n, int & seed, double temperatura, double masa)
+{
+  double K_B = 1.380649e-23; //Joules/Kelvin
+  double v_media = std::sqrt(2*K_B*temperatura/masa); //De pronto es 3, de pronto
+  
+  std::vector<double> velocidades(2*n, 0.0);
+#pragma omp parallel for
+  for(int ii = 0; ii<2*n-1; ii+=2){
+    
+    velocidades[ii] = aleatorio_real(-1, 1, seed);
+    
+    int signo_aleatorio = aleatorio_entero(1,2, seed);
+    if(signo_aleatorio == 2){signo_aleatorio = -1;}
+    
+    velocidades[ii+1] = signo_aleatorio*std::sqrt(1 - velocidades[ii]*velocidades[ii]);
+
+    velocidades[ii] *= v_media;
+    velocidades[ii+1] *= v_media;
   }
   return velocidades;
 }
@@ -252,4 +275,28 @@ void gnuplot_trayectorias(std::vector<double> & posiciones, double radio)
     std::cout<<posiciones[2*ii]<<"\t"<<posiciones[2*ii+1]<<"\t"<<radio<< std::endl;
   }
   std::cout << "e" <<std::endl;
+}
+
+void gnuplot_init_trayectorias_gp(double l, std::string temperatura)
+{
+  std::string nombre_archivo = "trayectorias_" + temperatura + ".gp";
+  std::ofstream trayectorias;
+  trayectorias.open (nombre_archivo);
+  trayectorias << "set terminal gif animate " << std::endl;
+  trayectorias << "set out 'trayectorias.gif' " << std::endl;
+  trayectorias << "set xrange[0:" << l << "] " << std::endl;
+  trayectorias << "set yrange[0:" << l << "] " << std::endl;
+  //trayectorias.close();
+}
+
+void gnuplot_trayectorias_gp(std::vector<double> & posiciones, double radio)
+{
+  /*
+  trayectorias << "plot '-' with circles \n";
+  int n = posiciones.size()/2;
+  for(int ii = 0; ii < n; ii++){
+    trayectorias << posiciones[2*ii] << "\t" << posiciones[2*ii+1] << "\t" << radio << "\n" ;
+  }
+  trayectorias << "e\n";
+  */
 }

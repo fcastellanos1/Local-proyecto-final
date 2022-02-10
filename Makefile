@@ -1,10 +1,14 @@
 N_THREADS=16
-N_PARTICLES=100
 TEMPERATURA=500
 
 gif: gas-ideal.out gas-ideal.cpp funciones.cpp funciones.h
-	OMP_NUM_THREADS=$(N_THREADS) ./$< $(N_PARTICLES) $(TEMPERATURA) | gnuplot
+	OMP_NUM_THREADS=$(N_THREADS) ./$< $(TEMPERATURA) | gnuplot
 	geeqie trayectorias.gif &
+
+gif_2: gas-ideal.out gas-ideal.cpp funciones.cpp funciones.h
+	OMP_NUM_THREADS=$(N_THREADS) ./$< $(TEMPERATURA)
+	gnuplot trayectorias_$(TEMPERATURA).gp
+	geeqie trayectorias_$(TEMPERATURA).gif &
 
 test: testing.out testing.cpp funciones.cpp funciones.h
 	OMP_NUM_THREADS=$(N_THREADS) ./$<
