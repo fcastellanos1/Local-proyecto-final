@@ -49,7 +49,7 @@ std::vector<double> creacion_velocidades(int n, int & seed)
 std::vector<double> creacion_velocidades_2(int n, int & seed, double temperatura, double masa)
 {
   double K_B = 1.380649e-23; //Joules/Kelvin
-  double v_media = std::sqrt(2*K_B*temperatura/masa); //De pronto es 3, de pronto
+  double v_media = std::sqrt(2*K_B*temperatura/masa); //Según Teo. Equip. Energía
   
   std::vector<double> velocidades(2*n, 0.0);
 #pragma omp parallel for
@@ -71,8 +71,6 @@ std::vector<double> creacion_velocidades_2(int n, int & seed, double temperatura
 void paso(std::vector<double> & posiciones, std::vector<double> & velocidades, double & tiempo, double delta_tiempo, double radio, double l)
 {
   int n = posiciones.size()/2;
-  //std::vector<double> copia_velocidades(n*2, 0.0);
-  //copia_velocidades = velocidades;
 
   for(int particula = 0; particula<n; particula++){
     double x = posiciones[2*particula];
@@ -194,8 +192,6 @@ void momento_con_particula(std::vector<double> & posiciones, std::vector<double>
   
   velocidades[2*particula_2] += (prod_punto/modulo_dc)*diferencia_centros[0];
   velocidades[2*particula_2+1] += (prod_punto/modulo_dc)*diferencia_centros[1];
-  
-  //particula_2++;
 }
 
 void momento_con_particula_paralelo(std::vector<double> & posiciones, std::vector<double> & velocidades, std::vector<double> & copia, int particula, int & particula_2, double delta_tiempo, double radio, double l)
@@ -217,7 +213,6 @@ void momento_con_particula_paralelo(std::vector<double> & posiciones, std::vecto
   
   //velocidades[2*particula_2] += (prod_punto/modulo_dc)*diferencia_centros[0];
   //velocidades[2*particula_2+1] += (prod_punto/modulo_dc)*diferencia_centros[1];
-  
 }
 
 void hacer_distribucion(std::vector<double> & velocidades, double temperatura, double masa, std::string temperatura_string)
@@ -323,41 +318,17 @@ void gnuplot_init_trayectorias(double l, double temperatura, double dt)
   std::cout << "set out 'trayectorias_"<<temperatura<<".gif' " << std::endl;
   std::cout << "set title 'Trayectorias de partículas con T="<<temperatura<< "K'" << std::endl;
   std::cout << "set xlabel 'x[m]'; set ylabel 'y[m]'" << std::endl;
-  std::cout << "set label 'Tiempo de frame = dt = "<<dt<<"' at 0,0.03" << std::endl;
+  std::cout << "set label 'Tiempo de frame = "<<dt<<"s' at 0,0.03" << std::endl;
   std::cout << "set xrange[0:" << l << "] " << std::endl;
   std::cout << "set yrange[0:" << l << "] " << std::endl;
 }
 
 void gnuplot_trayectorias(std::vector<double> & posiciones, double radio)
 {
-  std::cout << "plot '-' with circles" << std::endl;
+  std::cout << "plot '-' with circles notitle" << std::endl;
   int n = posiciones.size()/2;
   for(int ii = 0; ii < n; ii++){
     std::cout<<posiciones[2*ii]<<"\t"<<posiciones[2*ii+1]<<"\t"<<radio<< std::endl;
   }
   std::cout << "e" <<std::endl;
-}
-
-void gnuplot_init_trayectorias_gp(double l, std::string temperatura)
-{
-  std::string nombre_archivo = "trayectorias_" + temperatura + ".gp";
-  std::ofstream trayectorias;
-  trayectorias.open (nombre_archivo);
-  trayectorias << "set terminal gif animate " << std::endl;
-  trayectorias << "set out 'trayectorias.gif' " << std::endl;
-  trayectorias << "set xrange[0:" << l << "] " << std::endl;
-  trayectorias << "set yrange[0:" << l << "] " << std::endl;
-  //trayectorias.close();
-}
-
-void gnuplot_trayectorias_gp(std::vector<double> & posiciones, double radio)
-{
-  /*
-  trayectorias << "plot '-' with circles \n";
-  int n = posiciones.size()/2;
-  for(int ii = 0; ii < n; ii++){
-    trayectorias << posiciones[2*ii] << "\t" << posiciones[2*ii+1] << "\t" << radio << "\n" ;
-  }
-  trayectorias << "e\n";
-  */
 }

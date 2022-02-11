@@ -1,11 +1,9 @@
 #ifndef FUNCIONES_H_
 #define FUNCIONES_H_
 #include <iostream>
-#include <cassert>
 #include <cstdlib>
 #include <cmath>
 #include <vector>
-#include <eigen3/Eigen/Dense>
 #include <random>
 #include <fstream>
 #include <string>
@@ -28,7 +26,5 @@ double aleatorio_entero(int min, int max, int & seed);
 void print_vector(std::vector<double> data);
 void gnuplot_init_trayectorias(double l, double temperatura, double dt);
 void gnuplot_trayectorias(std::vector<double> & posiciones, double radio);
-void gnuplot_init_trayectorias_gp(double l, std::string temperatura);
-void gnuplot_trayectorias_gp(std::vector<double> & posiciones, double radio);
 
 #endif
