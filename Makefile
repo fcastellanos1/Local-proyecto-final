@@ -3,7 +3,8 @@ TEMPERATURA=500
 
 gif: gas-ideal.out gas-ideal.cpp funciones.cpp funciones.h
 	OMP_NUM_THREADS=$(N_THREADS) ./$< $(TEMPERATURA) | gnuplot
-	geeqie trayectorias.gif &
+	gnuplot distribucion_$(TEMPERATURA).gp
+#	geeqie trayectorias.gif &
 
 gif_2: gas-ideal.out gas-ideal.cpp funciones.cpp funciones.h
 	OMP_NUM_THREADS=$(N_THREADS) ./$< $(TEMPERATURA)
@@ -20,6 +21,6 @@ testing.out: testing.cpp funciones.cpp funciones.h
 	g++ -g -fopenmp -std=c++11 $< funciones.cpp -o $@
 
 clean:
-	rm -rf *.x *.out *.x.* *~ *.pdf *.png *.gif *.txt *.data *#
+	rm -rf *.x *.out *.x.* *~ *.pdf *.png *.gp *.gif *.txt *.data *#
 
 #-fsanitize=undefined -fsanitize=thread

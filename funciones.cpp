@@ -220,16 +220,75 @@ void momento_con_particula_paralelo(std::vector<double> & posiciones, std::vecto
   
 }
 
-void hacer_distribucion(std::vector<double> velocidades)
+void hacer_distribucion(std::vector<double> & velocidades, double temperatura, double masa, std::string temperatura_string)
 {
+  int particiones = 15;
   int n = velocidades.size()/2;
+  double K_B = 1.380649e-23; //Joules/Kelvin
+  double v_media = std::sqrt(2*K_B*temperatura/masa); //metros/segundos
+  double v_aprox_max = v_media*2.5;
+  
+  std::string nombre_archivo = "distribucion_" + temperatura_string + ".gp";
+  std::ofstream distribucion;
+  distribucion.open (nombre_archivo);
+  //distribucion << "set xrange[0:" << v_aprox_max << "] " << std::endl;
+  //distribucion << "set yrange[0:" << n << "] " << std::endl;
+
+  std::vector<int> contador(particiones, 0);
+  double min_caja = 0.0;
+  double max_caja;
+  double dv = v_aprox_max/particiones;
+  
   for(int particula = 0; particula<n; particula++){
     double vx = velocidades[2*particula];
     double vy = velocidades[2*particula+1];
     double v = std::sqrt(std::pow(vx,2)+std::pow(vy,2));
+    caja_donde_cae(v, contador, v_aprox_max);
   }
   
+  //Init gnuplot:
+  distribucion << "k=" << K_B << "\n";
+  distribucion << "T=" << temperatura << "\n";
+  distribucion << "N=" << n << "\n";
+  distribucion << "m=" << masa << "\n";
+  
+  distribucion << "set title 'Distribución de velocidades para T="<<temperatura<<"K'\n";
+  distribucion << "set grid\n";
+  distribucion << "set term pdf; set out 'distribucion_"<<temperatura<<".pdf'\n";
+  distribucion << "set xlabel 'Velocidad[m/s]'; set ylabel 'Número de partículas'\n";
+  distribucion << "plot 4*pi*(m/(2*pi*k*T))**(1.5)*x**2*exp(-(m*x**2)/(2*k*T))*N*100 title 'Teórica', '-' w l t 'Experimental'\n";
+  //distribucion << "plot '-' w l t 'Experimental'\n";
+  
+  for(int ii=0; ii<particiones; ii++){
+    max_caja = dv*(ii+1);
+    //Impresión
+    distribucion << min_caja << "\t" << 0 << "\n";
+    distribucion << min_caja << "\t" << contador[ii] << "\n";
+    distribucion << max_caja << "\t" << contador[ii] << "\n";
+    min_caja = max_caja;
+    if(ii==particiones-1){distribucion << max_caja << "\t" << 0 <<"\n";}
+  }
+
+  distribucion << "e\n";
+  
+  distribucion.close();
 }
+
+
+void caja_donde_cae(double v, std::vector<int> & contador, double vmax)
+{
+  int particiones = contador.size();
+  double min_caja = 0.0;
+  double max_caja;
+  double dv = vmax/particiones;
+  for(int ii=0; ii<particiones; ii++){
+    max_caja = dv*(ii+1);
+    if(v >= min_caja && v < max_caja){contador[ii]++;}
+    if(ii==particiones-1 && v>= max_caja){contador[ii]++;}
+    min_caja = max_caja;
+  }
+}
+
 
 double aleatorio_real(double min, double max, int & seed)
 {
@@ -258,11 +317,13 @@ void print_vector(std::vector<double> data)
   
 }
 
-void gnuplot_init_trayectorias(double l)
+void gnuplot_init_trayectorias(double l, double temperatura, double dt)
 {
   std::cout << "set terminal gif animate " << std::endl;
-  std::cout << "set out 'trayectorias.gif' " << std::endl;
-  //std::cout << "set border 15 back lw 20 " << std::endl;
+  std::cout << "set out 'trayectorias_"<<temperatura<<".gif' " << std::endl;
+  std::cout << "set title 'Trayectorias de partículas con T="<<temperatura<< "K'" << std::endl;
+  std::cout << "set xlabel 'x[m]'; set ylabel 'y[m]'" << std::endl;
+  std::cout << "set label 'Tiempo de frame = dt = "<<dt<<"' at 0,0.03" << std::endl;
   std::cout << "set xrange[0:" << l << "] " << std::endl;
   std::cout << "set yrange[0:" << l << "] " << std::endl;
 }

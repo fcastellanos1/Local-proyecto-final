@@ -21,11 +21,12 @@ void posicion_siguiente(std::vector<double> & posiciones, std::vector<double> & 
 void momento_con_pared(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, double delta_tiempo, double radio, double l);
 void momento_con_particula(std::vector<double> & posiciones, std::vector<double> & velocidades, int particula, int & particula_2, double delta_tiempo, double radio, double l);
 void momento_con_particula_paralelo(std::vector<double> & posiciones, std::vector<double> & velocidades, std::vector<double> & copia, int particula, int & particula_2, double delta_tiempo, double radio, double l);
-void hacer_distribucion(std::vector<double> velocidades);
+void hacer_distribucion(std::vector<double> & velocidades, double temperatura, double masa, std::string temperatura_string);
+void caja_donde_cae(double v, std::vector<int> & contador, double vmax);
 double aleatorio_real(double min, double max, int & seed);
 double aleatorio_entero(int min, int max, int & seed);
 void print_vector(std::vector<double> data);
-void gnuplot_init_trayectorias(double l);
+void gnuplot_init_trayectorias(double l, double temperatura, double dt);
 void gnuplot_trayectorias(std::vector<double> & posiciones, double radio);
 void gnuplot_init_trayectorias_gp(double l, std::string temperatura);
 void gnuplot_trayectorias_gp(std::vector<double> & posiciones, double radio);
